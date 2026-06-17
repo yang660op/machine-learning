@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dry Bean Classification System - 干豆分类系统</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif; color: #1a1a2e; background: #f8f9fa; line-height: 1.7; }
+.hero { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; padding: 60px 20px; text-align: center; }
+.hero h1 { font-size: 2.2em; margin-bottom: 10px; }
+.hero p { font-size: 1.1em; opacity: 0.85; }
+.badge { display: inline-block; background: rgba(255,255,255,0.15); border-radius: 20px; padding: 6px 18px; margin: 4px; font-size: 0.85em; }
+.container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+.section { background: white; border-radius: 12px; padding: 35px; margin: 25px 0; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.section h2 { font-size: 1.4em; border-left: 4px solid #0f3460; padding-left: 12px; margin-bottom: 20px; color: #16213e; }
+.section h3 { font-size: 1.1em; margin: 18px 0 10px; color: #333; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.card { background: #f8f9fa; border-radius: 8px; padding: 18px; }
+.card h4 { color: #0f3460; margin-bottom: 6px; }
+table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 0.92em; }
+th { background: #16213e; color: white; padding: 10px 12px; text-align: center; font-weight: 600; }
+td { padding: 9px 12px; text-align: center; border-bottom: 1px solid #eee; }
+tr:hover td { background: #f0f4ff; }
+tr:nth-child(even) td { background: #fafbfc; }
+tr:hover td { background: #eef2ff !important; }
+.highlight { background: #fff8e1 !important; font-weight: bold; }
+.highlight td { background: #fff8e1 !important; }
+.best { color: #0f3460; font-weight: bold; }
+.tag { display: inline-block; font-size: 0.75em; padding: 2px 10px; border-radius: 10px; margin: 0 2px; }
+.tag-green { background: #e8f5e9; color: #2e7d32; }
+.tag-red { background: #fbe9e7; color: #c62828; }
+.tag-blue { background: #e3f2fd; color: #1565c0; }
+.tag-yellow { background: #fff8e1; color: #f57f17; }
+.stats-row { display: flex; flex-wrap: wrap; gap: 15px; margin: 15px 0; }
+.stat-box { flex: 1; min-width: 140px; background: linear-gradient(135deg, #f8f9fa, #eef2ff); border-radius: 10px; padding: 18px; text-align: center; }
+.stat-box .num { font-size: 1.6em; font-weight: bold; color: #0f3460; }
+.stat-box .label { font-size: 0.82em; color: #666; margin-top: 4px; }
+.chart-row { display: flex; flex-wrap: wrap; gap: 20px; margin: 20px 0; }
+.chart-row img { flex: 1; min-width: 300px; border-radius: 8px; border: 1px solid #e0e0e0; max-width: 100%; }
+code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 0.88em; font-family: "JetBrains Mono", "Fira Code", monospace; }
+pre { background: #1a1a2e; color: #f8f8f2; padding: 16px 20px; border-radius: 8px; overflow-x: auto; font-size: 0.88em; margin: 12px 0; }
+pre code { background: none; padding: 0; color: inherit; }
+.verdict { font-weight: bold; }
+.verdict-good { color: #2e7d32; }
+.verdict-warn { color: #f57f17; }
+.verdict-bad { color: #c62828; }
+footer { text-align: center; padding: 30px 20px; color: #999; font-size: 0.85em; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>Dry Bean Classification System</h1>
+  <p>基于多机器学习算法的干豆品种自动分类系统</p>
+  <div style="margin-top: 16px;">
+    <span class="badge">13,611 样本</span>
+    <span class="badge">16 维特征</span>
+    <span class="badge">7 个品种</span>
+    <span class="badge">7 种算法</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- 项目概览 -->
+<div class="section">
+  <h2>项目概览</h2>
+  <p>本项目基于 Dry Bean Dataset，构建了一套完整的机器学习分类流水线，涵盖<strong>数据清洗 → 特征工程 → 多算法建模 → 四维度评估</strong>全流程。原始数据存在标签噪声（25种混乱标签）、缺失值（Perimeter 469个、Solidity 272个）及类型异常三类污染问题。</p>
+  <div class="stats-row">
+    <div class="stat-box"><div class="num">13,611</div><div class="label">总样本数</div></div>
+    <div class="stat-box"><div class="num">16</div><div class="label">形态特征</div></div>
+    <div class="stat-box"><div class="num">7</div><div class="label">干豆品种</div></div>
+    <div class="stat-box"><div class="num">92.88%</div><div class="label">最优准确率 (SVM)</div></div>
+  </div>
+</div>
+
+<!-- 数据描述 -->
+<div class="section">
+  <h2>数据描述</h2>
+
+  <h3>数据集来源</h3>
+  <p>Dry Bean Dataset 包含 13,611 个样本，每个样本通过图像处理提取 16 个几何形态特征，用于区分 7 种干豆品种。数据集按 7:2:1 划分为训练集（9,527）、测试集（2,737）和验证集（1,347）。</p>
+
+  <h3>特征列表（16 个）</h3>
+  <table>
+    <tr><th>特征</th><th>描述</th><th>类型</th></tr>
+    <tr><td>Area</td><td>豆粒区域面积（像素）</td><td>尺寸</td></tr>
+    <tr><td>Perimeter</td><td>豆粒周长</td><td>尺寸</td></tr>
+    <tr><td>MajorAxisLength</td><td>长轴长度</td><td>尺寸</td></tr>
+    <tr><td>MinorAxisLength</td><td>短轴长度</td><td>尺寸</td></tr>
+    <tr><td>AspectRation</td><td>长宽比</td><td>形状</td></tr>
+    <tr><td>Eccentricity</td><td>离心率</td><td>形状</td></tr>
+    <tr><td>ConvexArea</td><td>凸包面积</td><td>尺寸</td></tr>
+    <tr><td>EquivDiameter</td><td>等效直径</td><td>尺寸</td></tr>
+    <tr><td>Extent</td><td>外接矩形占比</td><td>形状</td></tr>
+    <tr><td>Solidity</td><td>坚固度（面积/凸包面积）</td><td>形状</td></tr>
+    <tr><td>roundness</td><td>圆度</td><td>形状</td></tr>
+    <tr><td>Compactness</td><td>紧密度</td><td>形状</td></tr>
+    <tr><td>ShapeFactor1~4</td><td>形状因子 1~4</td><td>形状</td></tr>
+  </table>
+
+  <h3>类别分布</h3>
+  <table>
+    <tr><th>类别</th><th>训练集样本数</th><th>占比</th></tr>
+    <tr><td>DERMASON</td><td>2,482</td><td>26.05%</td></tr>
+    <tr><td>SIRA</td><td>1,818</td><td>19.08%</td></tr>
+    <tr><td>SEKER</td><td>1,395</td><td>14.64%</td></tr>
+    <tr><td>HOROZ</td><td>1,326</td><td>13.92%</td></tr>
+    <tr><td>CALI</td><td>1,136</td><td>11.92%</td></tr>
+    <tr><td>BARBUNYA</td><td>916</td><td>9.61%</td></tr>
+    <tr><td>BOMBAY</td><td>360</td><td>3.78%</td></tr>
+  </table>
+
+  <h3>数据污染问题</h3>
+  <table>
+    <tr><th>问题类型</th><th>描述</th><th>严重程度</th></tr>
+    <tr><td>标签噪声</td><td>25 种混乱标签（大小写、字符替换、尾部空格）</td><td><span class="tag tag-red">严重</span></td></tr>
+    <tr><td>缺失值</td><td>Perimeter（469个）、Solidity（272个）</td><td><span class="tag tag-yellow">中等</span></td></tr>
+    <tr><td>类型异常</td><td>Solidity、Compactness 为字符串类型</td><td><span class="tag tag-yellow">中等</span></td></tr>
+  </table>
+</div>
+
+<!-- 数据处理 -->
+<div class="section">
+  <h2>数据处理方法</h2>
+
+  <div class="grid-2">
+    <div class="card">
+      <h4>1. 标签标准化</h4>
+      <p>将 25 种混乱标签通过映射字典统一为 7 个标准类别，覆盖大小写、字符替换、尾部空格三种噪声。</p>
+      <pre><code>D3RMAS0N → DERMASON
+S3K3R   → SEKER
+H0R0Z   → HOROZ
+B0MBAY  → BOMBAY</code></pre>
+    </div>
+    <div class="card">
+      <h4>2. 数据类型修复</h4>
+      <p>使用 <code>pd.to_numeric(errors='coerce')</code> 将 Solidity 和 Compactness 从字符串强制转换为浮点类型。</p>
+    </div>
+    <div class="card">
+      <h4>3. 缺失值填充</h4>
+      <p>以训练集中位数填充，避免数据泄露：Perimeter → 794.336，Solidity → 0.9883，Compactness → 0.8011</p>
+    </div>
+    <div class="card">
+      <h4>4. 特征标准化</h4>
+      <p>使用 <code>StandardScaler</code> 对所有 16 个特征进行 Z-score 标准化，确保不同量纲特征尺度一致。</p>
+    </div>
+  </div>
+</div>
+
+<!-- 算法实现 -->
+<div class="section">
+  <h2>实现的算法</h2>
+  <p>共实现 7 种多分类算法，涵盖线性模型、SVM、树模型、神经网络和集成学习。</p>
+
+  <table>
+    <tr><th>算法</th><th>类型</th><th>核心配置</th></tr>
+    <tr><td><strong>Logistic Regression</strong></td><td><span class="tag tag-blue">线性模型</span></td><td>Softmax 多分类，max_iter=2000</td></tr>
+    <tr><td><strong>Decision Tree</strong></td><td><span class="tag tag-green">树模型</span></td><td>CART 算法，Gini 系数分裂准则</td></tr>
+    <tr><td><strong>Random Forest</strong></td><td><span class="tag tag-green">集成学习</span></td><td>Bagging，100 棵决策树，随机特征子集</td></tr>
+    <tr><td><strong>SVM (RBF)</strong></td><td><span class="tag tag-blue">SVM</span></td><td>径向基核函数，自动概率估计</td></tr>
+    <tr><td><strong>KNN</strong></td><td><span class="tag tag-yellow">基于实例</span></td><td>欧氏距离，k=5，多数投票</td></tr>
+    <tr><td><strong>ANN (MLP)</strong></td><td><span class="tag tag-red">神经网络</span></td><td>3 层全连接 128→64→7，ReLU + Adam，早停</td></tr>
+    <tr><td><strong>XGBoost</strong></td><td><span class="tag tag-green">集成学习</span></td><td>Boosting，200 轮，lr=0.1，mlogloss</td></tr>
+  </table>
+
+  <h3>超参数调优（ANN）</h3>
+  <p>使用 GridSearchCV 对 ANN 进行网格搜索，3 折交叉验证，评估指标为加权 F1。</p>
+  <table>
+    <tr><th>参数</th><th>搜索空间</th><th>最优值</th></tr>
+    <tr><td>隐藏层结构</td><td>(64,), (128,), (128,64), (256,128)</td><td>(128, 64)</td></tr>
+    <tr><td>激活函数</td><td>relu, tanh</td><td>relu</td></tr>
+    <tr><td>初始学习率</td><td>0.001, 0.01</td><td>0.001</td></tr>
+  </table>
+</div>
+
+<!-- 实验结果 -->
+<div class="section">
+  <h2>实验结果</h2>
+
+  <h3>表 1：分类性能对比</h3>
+  <table>
+    <tr><th>模型</th><th>训练准确率</th><th>测试准确率</th><th>过拟合差距</th><th>精确率</th><th>召回率</th><th>F1-Score</th><th>CV 均值</th><th>训练时间(s)</th></tr>
+    <tr class="highlight"><td>SVM (RBF)</td><td>0.9299</td><td class="best">0.9288</td><td class="best">0.0011</td><td>0.9290</td><td>0.9288</td><td class="best">0.9288</td><td>0.9241</td><td>2.86</td></tr>
+    <tr><td>XGBoost</td><td>0.9966</td><td>0.9280</td><td>0.0686</td><td>0.9282</td><td>0.9280</td><td>0.9281</td><td class="best">0.9263</td><td>4.40</td></tr>
+    <tr><td>Random Forest</td><td>0.9999</td><td>0.9233</td><td>0.0766</td><td>0.9237</td><td>0.9233</td><td>0.9233</td><td>0.9251</td><td>5.00</td></tr>
+    <tr><td>ANN (MLP)</td><td>0.9273</td><td>0.9218</td><td>0.0054</td><td>0.9224</td><td>0.9218</td><td>0.9220</td><td>0.9256</td><td>2.82</td></tr>
+    <tr><td>KNN</td><td>0.9347</td><td>0.9178</td><td>0.0169</td><td>0.9209</td><td>0.9178</td><td>0.9185</td><td>0.9142</td><td>0.01</td></tr>
+    <tr><td>Logistic Regression</td><td>0.9250</td><td>0.9185</td><td>0.0064</td><td>0.9204</td><td>0.9185</td><td>0.9191</td><td>0.9216</td><td>5.58</td></tr>
+    <tr><td>Decision Tree</td><td>1.0000</td><td>0.8950</td><td>0.1050</td><td>0.8956</td><td>0.8950</td><td>0.8949</td><td>0.8928</td><td>0.27</td></tr>
+  </table>
+
+  <h3>表 2：五折交叉验证详细结果</h3>
+  <table>
+    <tr><th>模型</th><th>Fold 1</th><th>Fold 2</th><th>Fold 3</th><th>Fold 4</th><th>Fold 5</th><th>均值</th><th>标准差</th></tr>
+    <tr><td>SVM (RBF)</td><td>0.9226</td><td>0.9263</td><td>0.9274</td><td>0.9182</td><td>0.9260</td><td>0.9241</td><td>0.0032</td></tr>
+    <tr class="highlight"><td>XGBoost</td><td>0.9241</td><td>0.9279</td><td>0.9332</td><td>0.9166</td><td>0.9297</td><td class="best">0.9263</td><td>0.0060</td></tr>
+    <tr><td>Random Forest</td><td>0.9241</td><td>0.9258</td><td>0.9306</td><td>0.9182</td><td>0.9268</td><td>0.9251</td><td>0.0042</td></tr>
+    <tr><td>ANN (MLP)</td><td>0.9221</td><td>0.9258</td><td>0.9301</td><td>0.9213</td><td>0.9289</td><td>0.9256</td><td>0.0033</td></tr>
+    <tr><td>KNN</td><td>0.9125</td><td>0.9211</td><td>0.9151</td><td>0.9053</td><td>0.9171</td><td>0.9142</td><td>0.0054</td></tr>
+    <tr><td>Logistic Regression</td><td>0.9195</td><td>0.9253</td><td>0.9258</td><td>0.9156</td><td>0.9218</td><td>0.9216</td><td>0.0039</td></tr>
+    <tr><td>Decision Tree</td><td>0.8936</td><td>0.8900</td><td>0.8987</td><td>0.8839</td><td>0.8976</td><td>0.8928</td><td>0.0055</td></tr>
+  </table>
+
+  <h3>表 3：推理速度对比</h3>
+  <table>
+    <tr><th>模型</th><th>平均推理时间 (ms)</th><th>标准差 (ms)</th><th>吞吐量 (samples/s)</th></tr>
+    <tr class="highlight"><td>Logistic Regression</td><td class="best">0.49</td><td>0.57</td><td class="best">5,590,894</td></tr>
+    <tr><td>Decision Tree</td><td>0.62</td><td>0.43</td><td>4,378,245</td></tr>
+    <tr><td>XGBoost</td><td>9.68</td><td>1.64</td><td>280,263</td></tr>
+    <tr><td>Random Forest</td><td>118.93</td><td>14.83</td><td>22,811</td></tr>
+    <tr><td>KNN</td><td>258.30</td><td>42.86</td><td>10,503</td></tr>
+    <tr><td>SVM (RBF)</td><td>664.59</td><td>201.32</td><td>4,082</td></tr>
+  </table>
+
+  <h3>表 4：Gaussian 噪声下的鲁棒性</h3>
+  <table>
+    <tr><th>模型</th><th>Clean</th><th>σ=0.1</th><th>σ=0.5</th><th>σ=1.0</th><th>σ=2.0</th></tr>
+    <tr class="highlight"><td>SVM (RBF)</td><td class="best">0.9285</td><td class="best">0.9244</td><td class="best">0.8540</td><td>0.6992</td><td>0.2230</td></tr>
+    <tr><td>XGBoost</td><td>0.9263</td><td>0.9141</td><td>0.7269</td><td>0.5330</td><td>0.3550</td></tr>
+    <tr><td>Random Forest</td><td>0.9233</td><td>0.9182</td><td>0.8131</td><td>0.6366</td><td>0.4246</td></tr>
+    <tr><td>ANN (MLP)</td><td>0.9249</td><td>0.9200</td><td>0.8350</td><td>0.6850</td><td>0.4100</td></tr>
+    <tr><td>Logistic Regression</td><td>0.9182</td><td>0.9145</td><td>0.8002</td><td>0.6086</td><td>0.4128</td></tr>
+    <tr><td>KNN</td><td>0.9178</td><td>0.9174</td><td>0.8478</td><td class="best">0.7261</td><td class="best">0.5050</td></tr>
+    <tr><td>Decision Tree</td><td>0.8950</td><td>0.8367</td><td>0.5772</td><td>0.3889</td><td>0.2687</td></tr>
+  </table>
+
+  <h3>表 5：椒盐噪声下的鲁棒性</h3>
+  <table>
+    <tr><th>模型</th><th>Clean</th><th>椒盐 5%</th><th>下降</th><th>椒盐 10%</th><th>下降</th></tr>
+    <tr class="highlight"><td>Random Forest</td><td>0.9233</td><td class="best">0.9104</td><td class="best">0.0129</td><td class="best">0.8935</td><td class="best">0.0299</td></tr>
+    <tr><td>XGBoost</td><td>0.9263</td><td>0.9031</td><td>0.0232</td><td>0.8747</td><td>0.0516</td></tr>
+    <tr><td>SVM (RBF)</td><td>0.9285</td><td>0.8813</td><td>0.0472</td><td>0.8400</td><td>0.0885</td></tr>
+    <tr><td>KNN</td><td>0.9178</td><td>0.8795</td><td>0.0383</td><td>0.8201</td><td>0.0977</td></tr>
+    <tr><td>Decision Tree</td><td>0.8950</td><td>0.8142</td><td>0.0807</td><td>0.7600</td><td>0.1349</td></tr>
+    <tr><td>ANN (MLP)</td><td>0.9249</td><td>0.8430</td><td>0.0752</td><td>0.7733</td><td>0.1449</td></tr>
+    <tr><td>Logistic Regression</td><td>0.9182</td><td>0.8430</td><td>0.0752</td><td>0.7733</td><td>0.1449</td></tr>
+  </table>
+
+  <h3>表 6：过拟合分析</h3>
+  <table>
+    <tr><th>模型</th><th>训练准确率</th><th>测试准确率</th><th>过拟合差距</th><th>判定</th></tr>
+    <tr class="highlight"><td>SVM (RBF)</td><td>0.9299</td><td>0.9288</td><td class="best">0.0011</td><td><span class="verdict verdict-good">优秀泛化</span></td></tr>
+    <tr><td>ANN (MLP)</td><td>0.9273</td><td>0.9218</td><td>0.0054</td><td><span class="verdict verdict-good">良好拟合</span></td></tr>
+    <tr><td>Logistic Regression</td><td>0.9250</td><td>0.9185</td><td>0.0064</td><td><span class="verdict verdict-good">良好拟合</span></td></tr>
+    <tr><td>KNN</td><td>0.9347</td><td>0.9178</td><td>0.0169</td><td><span class="verdict verdict-warn">轻微过拟合</span></td></tr>
+    <tr><td>XGBoost</td><td>0.9966</td><td>0.9280</td><td>0.0686</td><td><span class="verdict verdict-warn">过拟合</span></td></tr>
+    <tr><td>Random Forest</td><td>0.9999</td><td>0.9233</td><td>0.0766</td><td><span class="verdict verdict-warn">过拟合</span></td></tr>
+    <tr><td>Decision Tree</td><td>1.0000</td><td>0.8950</td><td>0.1050</td><td><span class="verdict verdict-bad">严重过拟合</span></td></tr>
+  </table>
+</div>
+
+<!-- 可视化 -->
+<div class="section">
+  <h2>可视化结果</h2>
+  <div class="chart-row">
+    <img src="../reports/model_comparison.png" alt="Model Comparison">
+    <img src="../reports/correlation_heatmap.png" alt="Correlation Heatmap">
+  </div>
+  <div class="chart-row">
+    <img src="../reports/overfitting_analysis.png" alt="Overfitting Analysis">
+    <img src="../reports/robustness_analysis.png" alt="Robustness Analysis">
+  </div>
+  <div class="chart-row">
+    <img src="../reports/loss_curve_xgboost.png" alt="XGBoost Loss Curve">
+    <img src="../reports/inference_speed.png" alt="Inference Speed">
+  </div>
+</div>
+
+<!-- 结论 -->
+<div class="section">
+  <h2>结论与建议</h2>
+  <div class="grid-2">
+    <div class="card">
+      <h4>精度最优：SVM (RBF)</h4>
+      <p>测试准确率 <strong>92.88%</strong>，过拟合差距仅 0.0011，综合表现最佳。</p>
+    </div>
+    <div class="card">
+      <h4>速度最优：Logistic Regression</h4>
+      <p>推理仅 <strong>0.49ms</strong>，吞吐量 559 万样本/秒，适合生产部署。</p>
+    </div>
+    <div class="card">
+      <h4>鲁棒性最优：Random Forest / KNN</h4>
+      <p>椒盐噪声下 Random Forest 最稳；高 Gaussian 噪声下 KNN 最佳。</p>
+    </div>
+    <div class="card">
+      <h4>综合平衡：ANN (MLP)</h4>
+      <p>精度 92.18%，速度 1.25ms，鲁棒性均衡，可自动化调参。</p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Dry Bean Classification System · <a href="https://github.com/yang660op/machine-learning">GitHub Repository</a>
+</footer>
+
+</div>
+</body>
+</html>
