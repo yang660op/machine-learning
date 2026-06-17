@@ -1,0 +1,7 @@
+Model,Avg Time (s),Std Time (s),Throughput (samples/s)
+Logistic Regression,0.00049,0.00057,5590894
+Decision Tree,0.00062,0.00043,4378245
+Random Forest,0.11893,0.01483,22811
+XGBoost,0.00968,0.00164,280263
+KNN,0.2583,0.04286,10503
+SVM (RBF),0.66459,0.20132,4082
